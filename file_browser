@@ -1,0 +1,48 @@
+#!/usr/bin/python3 
+
+import os
+import re
+
+path = "."
+
+def listFiles(path, **kargs):
+    # TODO: parameter to decide if print path/file or only file
+    show_hidden = kargs.get('hidden', False)
+    with os.scandir(path) as it:
+        for entry in it:
+            try:
+                if show_hidden:
+                    print(f"{path}/{entry.name}")
+                elif not entry.name.startswith('.'):
+                    print(f"{path}/{entry.name}")
+            except UnicodeEncodeError:
+                print(f"unicode error in {path}")
+
+def countFiles(path, regExp, **kargs):
+    count = 0
+    with os.scandir(path) as it:
+        for entry in it:
+            try:
+                if re.search(regExp, entry.name ):
+                    count += 1
+            except UnicodeEncodeError:
+                print(f"unicode error in {path}")
+    print(f"{path}: {count}")
+
+def scan(path, **kargs):
+    show_hidden = kargs.get('hidden', False)
+    action = kargs.get('action', 'list')
+    regExp = kargs.get('regExp', 'txt')
+    if action == 'list':
+        listFiles(path, hidden = show_hidden)
+    elif action == 'count':
+        countFiles(path, regExp, hidden = show_hidden)
+    with os.scandir(path) as it:
+        # TODO: add parameter for dirs first or files first
+        for entry in it:
+            # TODO: regards hidden and do not filter always
+            if not entry.name.startswith('.') and entry.is_dir():
+                scan(path + "/" + entry.name, hidden=show_hidden, action=action, regExp=regExp)
+
+scan(path, hidden=True, action='count', regExp='(mpg|avi|mp2|mp4|vob)')
+        
